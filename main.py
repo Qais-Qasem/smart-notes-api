@@ -1,72 +1,42 @@
+# main.py
+
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
+# استيراد الكلاسات من ملف services
+from services import NoteService, Note, NoteCreate
 
-# --- 1. تعريف هيكل البيانات (Data Model) ---
-# هذا الكلاس يحدد كيف يجب أن تبدو "الملاحظة"
-# أي ملاحظة يجب أن تحتوي على id, title, content
-class Note(BaseModel):
-    id: int
-    title: str
-    content: str
-
-# هذا الكلاس سنستخدمه عند إنشاء ملاحظة جديدة، لأن الـ id سيتم إنشاؤه تلقائياً
-class NoteCreate(BaseModel):
-    title: str
-    content: str
-
-# --- 2. قاعدة بيانات مؤقتة في الذاكرة ---
-# سنستخدم قائمة (list) عادية لتخزين الملاحظات
-# كل مرة تعيد تشغيل الخادم، ستبدأ هذه القائمة فارغة
-db: List[Note] = []
-next_note_id = 1
-
-# --- 3. إعداد تطبيق FastAPI ---
 app = FastAPI()
 
-# --- 4. برمجة نقاط الوصول (Endpoints) ---
+# إنشاء نسخة واحدة من خدمة الملاحظات لاستخدامها في كل التطبيق
+note_service = NoteService()
 
-# C = Create (إنشاء ملاحظة جديدة)
+# --- نقاط الوصول (Endpoints) الآن أصبحت أنظف بكثير ---
+
 @app.post("/notes/", response_model=Note)
-def create_note(note_in: NoteCreate):
-    global next_note_id
-    # إنشاء ملاحظة جديدة بالبيانات المستلمة وإعطائها id فريد
-    new_note = Note(id=next_note_id, title=note_in.title, content=note_in.content)
-    db.append(new_note)
-    next_note_id += 1
-    return new_note
+def create_note_endpoint(note_in: NoteCreate):
+    return note_service.create_note(note_in)
 
-# R = Read (قراءة كل الملاحظات)
 @app.get("/notes/", response_model=List[Note])
-def read_notes():
-    return db
+def read_notes_endpoint():
+    return note_service.get_all_notes()
 
-# R = Read (قراءة ملاحظة واحدة محددة)
 @app.get("/notes/{note_id}", response_model=Note)
-def read_note(note_id: int):
-    # البحث عن الملاحظة في "قاعدة البيانات"
-    for note in db:
-        if note.id == note_id:
-            return note
-    # إذا لم يتم العثور على الملاحظة، أرجع خطأ 404
-    raise HTTPException(status_code=404, detail="Note not found")
+def read_note_endpoint(note_id: int):
+    note = note_service.get_note_by_id(note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return note
 
-# U = Update (تحديث ملاحظة)
 @app.put("/notes/{note_id}", response_model=Note)
-def update_note(note_id: int, note_update: NoteCreate):
-    for i, note in enumerate(db):
-        if note.id == note_id:
-            # تحديث بيانات الملاحظة
-            db[i].title = note_update.title
-            db[i].content = note_update.content
-            return db[i]
-    raise HTTPException(status_code=404, detail="Note not found")
+def update_note_endpoint(note_id: int, note_update: NoteCreate):
+    updated_note = note_service.update_note(note_id, note_update)
+    if not updated_note:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return updated_note
 
-# D = Delete (حذف ملاحظة)
 @app.delete("/notes/{note_id}", response_model=dict)
-def delete_note(note_id: int):
-    for i, note in enumerate(db):
-        if note.id == note_id:
-            db.pop(i)
-            return {"message": "Note deleted successfully"}
-    raise HTTPException(status_code=404, detail="Note not found")
+def delete_note_endpoint(note_id: int):
+    was_deleted = note_service.delete_note(note_id)
+    if not was_deleted:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return {"message": "Note deleted successfully"}
