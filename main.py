@@ -40,3 +40,13 @@ def delete_note_endpoint(note_id: int):
     if not was_deleted:
         raise HTTPException(status_code=404, detail="Note not found")
     return {"message": "Note deleted successfully"}
+
+# أضف هذا الكود في نهاية ملف main.py
+
+@app.get("/notes/{note_id}/related", response_model=List[Note])
+def get_related_notes_endpoint(note_id: int):
+    related_notes = note_service.find_related_notes(note_id)
+    if not related_notes:
+        # لا يعتبر خطأ إذا لم توجد ملاحظات مشابهة، نرجع قائمة فارغة
+        return []
+    return related_notes
