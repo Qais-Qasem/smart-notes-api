@@ -7,6 +7,10 @@ from services import NoteService, Note, NoteCreate
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Smart Notes API! Please visit /docs for the documentation."}
+
 # إنشاء نسخة واحدة من خدمة الملاحظات لاستخدامها في كل التطبيق
 note_service = NoteService()
 
