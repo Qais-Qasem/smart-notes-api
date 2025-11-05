@@ -10,6 +10,7 @@ class Note(BaseModel):
     id: int
     title: str
     content: str
+    tags: Optional[List[str]] = None # the neww add on branch
     embedding: Optional[List[float]] = None # سيحتوي على بصمة المعنى
 
 class NoteCreate(BaseModel):
