@@ -1,4 +1,4 @@
-# Smart Notes API
+# Smart Notes API - Best App Ever
 
 This is a fully functional REST API for a "Smart Notes" application, built with Python and FastAPI. The API provides standard **CRUD** (Create, Read, Update, Delete) operations for managing notes.
 

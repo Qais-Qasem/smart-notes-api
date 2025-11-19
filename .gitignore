@@ -1,0 +1,17 @@
+# Python cache files (الملفات المؤقتة لبايثون)
+__pycache__/
+*.pyc
+
+# Virtual Environments (بيئات العمل)
+venv/
+.venv/
+env/
+.env
+
+# IDE Settings (إعدادات المحرر)
+.vscode/
+.idea/
+
+# OS generated files (ملفات النظام)
+.DS_Store
+Thumbs.db
